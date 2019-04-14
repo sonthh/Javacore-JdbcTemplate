@@ -1,15 +1,14 @@
 package com.sontran.jdbctemplate.demo.entity;
 
 public class Category {
-	private int id;
+	private Integer id;
 	private String name;
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
-		//System.out.println("Category.setId()");
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -18,20 +17,17 @@ public class Category {
 	}
 
 	public void setName(String name) {
-		//System.out.println("Category.setName()");
-		this.name = name;
-	}
-
-	public Category(int id, String name) {
-		super();
-		//System.out.println("Category.Category()");
-		this.id = id;
 		this.name = name;
 	}
 
 	public Category() {
 		super();
-		//System.out.println("Category.Category()");
+	}
+
+	public Category(Integer id, String name) {
+		super();
+		this.id = id;
+		this.name = name;
 	}
 
 	@Override

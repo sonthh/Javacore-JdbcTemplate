@@ -1,5 +1,6 @@
 package com.sontran.jdbctemplate.demo.main;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sontran.jdbctemplate.demo.entity.Category;
@@ -77,6 +78,19 @@ public class JdbcTemplateDemo {
 		System.out.println("UPDATE ITEM");
 		Long id = dao.save(new Category(0, "new category"));
 		System.out.println("id mới thêm; " + id);
+		
+		
+		List<Category> list = new ArrayList<>();
+		list.add(new Category(null, "new category 1"));
+		list.add(new Category(null, "new category 2"));
+		dao.saveListItem(list);
+		System.out.println("ALL ITEMS");
+		categories = dao.finnAll();
+		categories.forEach(item -> {
+			System.out.println(item);
+		});
 	}
+	
+	
 	
 }

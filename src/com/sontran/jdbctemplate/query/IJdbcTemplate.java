@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.sontran.jdbctemplate.mapper.BeanPropertyRowMapper;
 import com.sontran.jdbctemplate.mapper.RowMapper;
+import com.sontran.jdbctemplate.setter.BatchPreparedStatementSetter;
+import com.sontran.jdbctemplate.setter.PreparedStatementSetter;
 
 
 public interface IJdbcTemplate {
@@ -29,6 +31,9 @@ public interface IJdbcTemplate {
 	// UPDATE
 	boolean update(String sql, Object[] parameters);
 	boolean update(String sql);
+	<T> void batchUpdate(String sql, BatchPreparedStatementSetter<T> bpst);
+	
+	<T> boolean update(String sql, PreparedStatementSetter<T> pss);
 	
 	// INSERT
 	//Long insert(String sql, Object... parameters);

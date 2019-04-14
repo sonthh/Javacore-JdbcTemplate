@@ -1,5 +1,6 @@
 package com.sontran.jdbctemplate.demo.repository;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -8,6 +9,7 @@ import com.sontran.jdbctemplate.demo.entity.Category;
 import com.sontran.jdbctemplate.mapper.BeanPropertyRowMapper;
 import com.sontran.jdbctemplate.mapper.RowMapper;
 import com.sontran.jdbctemplate.query.JdbcTemplate;
+import com.sontran.jdbctemplate.setter.BatchPreparedStatementSetter;
 
 public class CategoryRepository {
 	private JdbcTemplate jdbcTemplate;
@@ -15,7 +17,6 @@ public class CategoryRepository {
 	public CategoryRepository() {
 		jdbcTemplate = new JdbcTemplate(MyDataSource.getInstance());
 	}
-	
 	
 	//TẠO MAPPER DÙNG NHIỀU LẦN Ở CÁC PHƯƠNG THỨC
 	public BeanPropertyRowMapper<Category> getBeanPropertyRowMapper() {
@@ -58,7 +59,7 @@ public class CategoryRepository {
 		return jdbcTemplate.queryForObject(sql, new Object[] { id }, new RowMapper<String>() {
 			@Override
 			public String mapRow(ResultSet rs) throws SQLException {
-				return rs.getString("name");
+				return rs.getString("name"); //RS.GETSTRING CẦN TRY CATCH T THROWS LUÔN
 			}
 		});
 	}
@@ -75,5 +76,20 @@ public class CategoryRepository {
 	
 	public Long save(Category category) {
 		return jdbcTemplate.insert("INSERT INTO categories(name) VALUES(?)", new Object[] { category.getName() });
+	}
+	
+	public void saveListItem(List<Category> categories) {
+		jdbcTemplate.batchUpdate("INSERT INTO categories(name) VALUES(?)", new BatchPreparedStatementSetter<Category>() {
+
+			@Override
+			public void setValues(PreparedStatement pst, int i) throws SQLException {
+				pst.setString(1, categories.get(i).getName());
+			}
+
+			@Override
+			public int getBatchSize() {
+				return categories.size();
+			}
+		});
 	}
 }

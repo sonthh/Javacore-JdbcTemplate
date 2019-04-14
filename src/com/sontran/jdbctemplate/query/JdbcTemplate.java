@@ -11,6 +11,8 @@ import java.util.List;
 import com.sontran.jdbctemplate.datasource.DataSource;
 import com.sontran.jdbctemplate.mapper.BeanPropertyRowMapper;
 import com.sontran.jdbctemplate.mapper.RowMapper;
+import com.sontran.jdbctemplate.setter.BatchPreparedStatementSetter;
+import com.sontran.jdbctemplate.setter.PreparedStatementSetter;
 
 public class JdbcTemplate implements IJdbcTemplate {
 
@@ -87,7 +89,6 @@ public class JdbcTemplate implements IJdbcTemplate {
 			this.setParameter(pst, conn, parameters);
 			rs = pst.executeQuery();
 			while (rs.next()) {
-				results.add(rowMapper.mapRow(rs));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -388,6 +389,41 @@ public class JdbcTemplate implements IJdbcTemplate {
 			dataSource.close(rs, pst, conn);
 		}
 		return results;
+	}
+
+	@Override
+	public <T> boolean update(String sql, PreparedStatementSetter<T> pss) {
+		boolean success = false;
+		try {
+			conn = dataSource.getConnection();
+			pst = conn.prepareStatement(sql);
+			pss.setValues(pst);
+			success = st.executeUpdate(sql) > 0 ? true : false;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			dataSource.close(pst, conn);
+		}
+		return success;
+	}
+
+	@Override
+	public <T> void batchUpdate(String sql, BatchPreparedStatementSetter<T> bpst) {
+		try {
+			conn = dataSource.getConnection();
+			pst = conn.prepareStatement(sql);
+			int batchSize = bpst.getBatchSize();
+			for (int i = 0; i < batchSize; i++) {
+				bpst.setValues(pst, i);
+				pst.addBatch();
+			}
+			
+			pst.executeBatch();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			dataSource.close(pst, conn);
+		}
 	}
 
 }
