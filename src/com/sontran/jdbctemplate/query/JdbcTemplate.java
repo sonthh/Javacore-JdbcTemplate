@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sontran.jdbctemplate.datasource.DataSource;
+import com.sontran.jdbctemplate.extractor.ResultSetExtractor;
 import com.sontran.jdbctemplate.mapper.BeanPropertyRowMapper;
 import com.sontran.jdbctemplate.mapper.RowMapper;
 import com.sontran.jdbctemplate.setter.BatchPreparedStatementSetter;
@@ -35,7 +36,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 		this.dataSource = dataSource;
 	}
 	
-	private void setParameter(PreparedStatement pst, Connection conn, Object... parameters) throws SQLException {
+	private void setParameter(PreparedStatement pst, Object[] parameters) throws SQLException {
 		if (parameters != null) {
 			for (int i = 0; i < parameters.length; i++) {
 				Object parameter = parameters[i];
@@ -86,7 +87,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 		try {
 			conn = dataSource.getConnection();
 			pst = conn.prepareStatement(sql);
-			this.setParameter(pst, conn, parameters);
+			this.setParameter(pst, parameters);
 			rs = pst.executeQuery();
 			while (rs.next()) {
 			}
@@ -123,7 +124,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 		try {
 			conn = dataSource.getConnection();
 			pst = conn.prepareStatement(sql);
-			this.setParameter(pst, conn, parameters);
+			this.setParameter(pst, parameters);
 			System.out.println(pst.toString());
 			rs = pst.executeQuery();
 			while (rs.next()) {
@@ -198,7 +199,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			pst = conn.prepareStatement(sql);
-			this.setParameter(pst, conn, parameters);
+			this.setParameter(pst, parameters);
 			success = pst.executeUpdate() > 0 ? true : false;
 			conn.commit();
 		} catch (SQLException e) {
@@ -255,7 +256,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 			conn = dataSource.getConnection();
 			conn.setAutoCommit(false);
 			pst = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-			setParameter(pst, conn, parameters);
+			setParameter(pst, parameters);
 			pst.executeUpdate();
 			rs = pst.getGeneratedKeys();
 			if (rs.next()) {
@@ -277,7 +278,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 		try {
 			conn = dataSource.getConnection();
 			pst = conn.prepareStatement(sql);
-			this.setParameter(pst, conn, parameters);
+			this.setParameter(pst, parameters);
 			rs = pst.executeQuery();
 			if (rs.next()) {
 				result = rowMapper.mapRow(rs);
@@ -296,7 +297,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 		try {
 			conn = dataSource.getConnection();
 			pst = conn.prepareStatement(sql);
-			this.setParameter(pst, conn, parameters);
+			this.setParameter(pst, parameters);
 			rs = pst.executeQuery();
 			if (rs.next()) {
 				result = rowMapper.mapRow(rs);
@@ -341,7 +342,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 		try {
 			conn = dataSource.getConnection();
 			pst = conn.prepareStatement(sql);
-			this.setParameter(pst, conn, parameters);
+			this.setParameter(pst, parameters);
 			rs = pst.executeQuery();
 			if (rs.next()) {
 				result = rs.getObject(1, clazz);
@@ -378,7 +379,7 @@ public class JdbcTemplate implements IJdbcTemplate {
 		try {
 			conn = dataSource.getConnection();
 			pst = conn.prepareStatement(sql);
-			this.setParameter(pst, conn, parameters);
+			this.setParameter(pst, parameters);
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				results.add(rs.getObject(1, clazz));
@@ -424,6 +425,39 @@ public class JdbcTemplate implements IJdbcTemplate {
 		} finally {
 			dataSource.close(pst, conn);
 		}
+	}
+
+	@Override
+	public <T> T query(String sql, ResultSetExtractor<T> rse) {
+		T result = null;
+		try {
+			conn = dataSource.getConnection();
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			result = rse.extractData(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			dataSource.close(rs, st, conn);
+		}
+		return result;
+	}
+
+	@Override
+	public <T> T query(String sql, Object[] parameters, ResultSetExtractor<T> rse) {
+		T result = null;
+		try {
+			conn = dataSource.getConnection();
+			pst = conn.prepareStatement(sql);
+			setParameter(pst, parameters);
+			rs = pst.executeQuery();
+			result = rse.extractData(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			dataSource.close(rs, pst, conn);
+		}
+		return result;
 	}
 
 }

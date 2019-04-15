@@ -25,6 +25,18 @@ public class JdbcTemplateDemo {
 			System.out.println(item);
 		});
 		
+		System.out.println("ALL ITEMS RESULTSET EXTRACTOR");
+		categories = dao.finnAll2();
+		categories.forEach(item -> {
+			System.out.println(item);
+		});
+		
+		System.out.println("ALL ITEMS id < 5 RESULTSET EXTRACTOR");
+		categories = dao.findByIdLessThan(5);
+		categories.forEach(item -> {
+			System.out.println(item);
+		});
+		
 		System.out.println("USING NOT IN OPERATOR (SET ARRAY IN JDBC)");
 		
 		

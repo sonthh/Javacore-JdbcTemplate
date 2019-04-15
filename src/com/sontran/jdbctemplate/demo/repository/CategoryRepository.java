@@ -3,9 +3,11 @@ package com.sontran.jdbctemplate.demo.repository;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sontran.jdbctemplate.demo.entity.Category;
+import com.sontran.jdbctemplate.extractor.ResultSetExtractor;
 import com.sontran.jdbctemplate.mapper.BeanPropertyRowMapper;
 import com.sontran.jdbctemplate.mapper.RowMapper;
 import com.sontran.jdbctemplate.query.JdbcTemplate;
@@ -27,13 +29,41 @@ public class CategoryRepository {
 		String sql = "SELECT * FROM categories";
 		return jdbcTemplate.query(sql, getBeanPropertyRowMapper());
 	}
+	
+	public List<Category> finnAll2() {
+		String sql = "SELECT * FROM categories";
+		return jdbcTemplate.query(sql, new ResultSetExtractor<List<Category>>() {
+			
+			@Override
+			public List<Category> extractData(ResultSet rs) throws SQLException {
+				List<Category> categories = new ArrayList<>();
+				while (rs.next()) {
+					categories.add(new Category(rs.getInt("id"), rs.getString("name")));
+				}
+				return categories;
+			}
+		});
+	}
+	public List<Category> findByIdLessThan(int id) {
+		String sql = "SELECT * FROM categories WHERE id < ?";
+		return jdbcTemplate.query(sql, new Object[] { id }, new ResultSetExtractor<List<Category>>() {
+			
+			@Override
+			public List<Category> extractData(ResultSet rs) throws SQLException {
+				List<Category> categories = new ArrayList<>();
+				while (rs.next()) {
+					categories.add(new Category(rs.getInt("id"), rs.getString("name")));
+				}
+				return categories;
+			}
+		});
+	}
 
 	public Category findOneById(int id) {
 		String sql = "SELECT * FROM categories WHERE id = ?";
 		return jdbcTemplate.queryForObject(sql, new Object[] { id }, getBeanPropertyRowMapper());
 	}
-
-
+	
 	public List<Category> findByIdNotIn(int[] ids) {
 		String sql = "SELECT * FROM categories WHERE id NOT IN(?)";
 		return jdbcTemplate.query(sql, new Object[] { ids }, getBeanPropertyRowMapper());

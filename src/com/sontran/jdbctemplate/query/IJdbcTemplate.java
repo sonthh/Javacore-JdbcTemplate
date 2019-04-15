@@ -2,6 +2,7 @@ package com.sontran.jdbctemplate.query;
 
 import java.util.List;
 
+import com.sontran.jdbctemplate.extractor.ResultSetExtractor;
 import com.sontran.jdbctemplate.mapper.BeanPropertyRowMapper;
 import com.sontran.jdbctemplate.mapper.RowMapper;
 import com.sontran.jdbctemplate.setter.BatchPreparedStatementSetter;
@@ -28,11 +29,17 @@ public interface IJdbcTemplate {
 	<T> List<T> queryForList(String sql, Class<T> clazz);
 	<T> List<T> queryForList(String sql, Object[] parameters, Class<T> clazz);
 	
+	//ResultSetExtractor
+	<T> T query(String sql,ResultSetExtractor<T> rse); 
+	<T> T query(String sql, Object[] parameters, ResultSetExtractor<T> rse); 
+
+	
 	// UPDATE
 	boolean update(String sql, Object[] parameters);
 	boolean update(String sql);
 	<T> void batchUpdate(String sql, BatchPreparedStatementSetter<T> bpst);
 	
+	//PreparedStatementSetter
 	<T> boolean update(String sql, PreparedStatementSetter<T> pss);
 	
 	// INSERT
